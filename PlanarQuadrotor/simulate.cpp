@@ -2,6 +2,7 @@
  * SDL window creation adapted from https://github.com/isJuhn/DoublePendulum
 */
 #include "simulate.h"
+#include <matplot/matplot.h>
 
 Eigen::MatrixXf LQR(PlanarQuadrotor &quadrotor, float dt) {
     /* Calculate LQR gain matrix */
@@ -15,9 +16,10 @@ Eigen::MatrixXf LQR(PlanarQuadrotor &quadrotor, float dt) {
     Eigen::MatrixXf K = Eigen::MatrixXf::Zero(6, 6);
     Eigen::Vector2f input = quadrotor.GravityCompInput();
 
-    Q.diagonal() << 10, 10, 10, 1, 10, 0.25 / 2 / M_PI;
-    R.row(0) << 0.1, 0.05;
-    R.row(1) << 0.05, 0.1;
+    Q.diagonal() << 4e-3, 4e-3, 4e2, 8e-3, 4.5e-2, 2 / 2 / M_PI;
+    R.row(0) << 3e1, 7;
+    R.row(1) << 7, 3e1;
+
 
     std::tie(A, B) = quadrotor.Linearize();
     A_discrete = Eye + dt * A;
@@ -31,6 +33,8 @@ void control(PlanarQuadrotor &quadrotor, const Eigen::MatrixXf &K) {
     quadrotor.SetInput(input - K * quadrotor.GetControlState());
 }
 
+void plotGraphs(const std::vector<float>& x_history, const std::vector<float>& y_history, const std::vector<float>& theta_history);
+
 int main(int argc, char* args[])
 {
     std::shared_ptr<SDL_Window> gWindow = nullptr;
@@ -39,6 +43,7 @@ int main(int argc, char* args[])
     const int SCREEN_HEIGHT = 720;
 
     /**
+     ZROBIONE ++++++++++++++++++++
      * TODO: Extend simulation
      * 1. Set goal state of the mouse when clicking left mouse button (transform the coordinates to the quadrotor world! see visualizer TODO list)
      *    [x, y, 0, 0, 0, 0]
@@ -48,6 +53,7 @@ int main(int argc, char* args[])
     PlanarQuadrotor quadrotor(initial_state);
     PlanarQuadrotorVisualizer quadrotor_visualizer(&quadrotor);
     /**
+     ZROBIONE ++++++++++++++++++++
      * Goal pose for the quadrotor
      * [x, y, theta, x_dot, y_dot, theta_dot]
      * For implemented LQR controller, it has to be [x, y, 0, 0, 0, 0]
@@ -56,11 +62,12 @@ int main(int argc, char* args[])
     goal_state << -1, 7, 0, 0, 0, 0;
     quadrotor.SetGoal(goal_state);
     /* Timestep for the simulation */
-    const float dt = 0.001;
+    const float dt = 0.001 * 5;
     Eigen::MatrixXf K = LQR(quadrotor, dt);
     Eigen::Vector2f input = Eigen::Vector2f::Zero(2);
 
     /**
+     ZROBIONE ++++++++++++++++++++
      * TODO: Plot x, y, theta over time
      * 1. Update x, y, theta history vectors to store trajectory of the quadrotor
      * 2. Plot trajectory using matplot++ when key 'p' is clicked
@@ -79,17 +86,31 @@ int main(int argc, char* args[])
 
         while (!quit)
         {
-            //events
+            state = quadrotor.GetState();  
+            x_history.push_back(state[0]);
+            y_history.push_back(state[1]);
+            theta_history.push_back(state[2]);
             while (SDL_PollEvent(&e) != 0)
             {
                 if (e.type == SDL_QUIT)
                 {
                     quit = true;
                 }
-                else if (e.type == SDL_MOUSEMOTION)
+                else if (e.type == SDL_MOUSEBUTTONDOWN && e.type)
                 {
+                    
                     SDL_GetMouseState(&x, &y);
-                    std::cout << "Mouse position: (" << x << ", " << y << ")" << std::endl;
+                    float kX = 1280.0 / SCREEN_WIDTH; // zakres od -640 do 640
+                    float kY = 720.0 / SCREEN_HEIGHT; // zakres od -360 do 360
+                    float quadrotorX = (x - SCREEN_WIDTH / 2) * kX;
+                    float quadrotorY = -(y - SCREEN_HEIGHT / 2) * kY;
+                    std::cout << "Target for the quadrotor : (" << quadrotorX << ", " << quadrotorY << ")" << std::endl;
+                    goal_state << quadrotorX, quadrotorY, 0, 0, 0, 0;
+                    quadrotor.SetGoal(goal_state);
+                }
+                else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_p)
+                {
+                    plotGraphs(x_history, y_history, theta_history);
                 }
                 
             }
@@ -112,6 +133,30 @@ int main(int argc, char* args[])
     SDL_Quit();
     return 0;
 }
+
+void plotGraphs(const std::vector<float>& x_history, const std::vector<float>& y_history, const std::vector<float>& theta_history)
+{
+                    
+      //x             
+    matplot::figure();
+    matplot::plot(x_history);
+    matplot::title("Change of X variable");
+    matplot::xlabel("time");
+    matplot::ylabel("x");
+        //y                         
+    matplot::figure();
+    matplot::plot(y_history);
+    matplot::title("Change of Y variable");
+    matplot::xlabel("time");
+    matplot::ylabel("y");
+        //th               
+    matplot::figure();
+    matplot::plot(theta_history);
+    matplot::title("Change of theta angle");
+    matplot::xlabel("time");
+    matplot::ylabel("theta");
+                    
+    }
 
 int init(std::shared_ptr<SDL_Window>& gWindow, std::shared_ptr<SDL_Renderer>& gRenderer, const int SCREEN_WIDTH, const int SCREEN_HEIGHT)
 {

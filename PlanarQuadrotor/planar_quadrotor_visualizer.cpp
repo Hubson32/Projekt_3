@@ -29,7 +29,7 @@ void PlanarQuadrotorVisualizer::render(std::shared_ptr<SDL_Renderer> &gRenderer)
     SDL_GetRendererOutputSize(gRenderer.get(), &screen_width, &screen_height);
     int q_x_screen = q_x + (screen_width/2);
     int q_y_screen = -q_y + (screen_height/2) + 29;
-    angle = angle + 5.0;
+    angle = angle + 60;
 
     // "Kadlub" drona
     SDL_Rect body = {q_x_screen - 85, q_y_screen - 30, 170, 9};

@@ -3,6 +3,7 @@
 */
 #include "simulate.h"
 #include <matplot/matplot.h>
+#include <random> 
 
 Eigen::MatrixXf LQR(PlanarQuadrotor &quadrotor, float dt) {
     /* Calculate LQR gain matrix */
@@ -49,20 +50,52 @@ int main(int argc, char* args[])
      *    [x, y, 0, 0, 0, 0]
      * 2. Update PlanarQuadrotor from simulation when goal is changed
     */
-    Eigen::VectorXf initial_state = Eigen::VectorXf::Zero(6);
+   
+     Eigen::VectorXf initial_state = Eigen::VectorXf::Zero(6);
+     
+    std::random_device random;
+    std::mt19937 gen(random());
+    
+    //zakresy losowosci x i y
+    
+    std::uniform_int_distribution<int> random_x1(-640, -500);
+    std::uniform_int_distribution<int> random_x2(500, 640);
+    std::uniform_int_distribution<int> random_y1(-320, -250);
+    std::uniform_int_distribution<int> random_y2(250, 320);
+
+   
+   //2 razy wybor z rownym prawdopodobienstwem
+    
+    std::uniform_int_distribution<int> choice1(0, 1);
+    if (choice1(gen) == 0)
+        initial_state[1] = random_y1(gen);  // Losuj y z pierwszego zakresu
+    else
+        initial_state[1] = random_y2(gen);  // Losuj y z drugiego zakresu
+     
+    std::uniform_int_distribution<int> choice2(0, 1);
+    
+     if (choice2(gen) == 0)
+        initial_state[0] = random_x1(gen);  // Losuj y z pierwszego zakresu
+    else
+        initial_state[0] = random_x2(gen);  // Losuj y z drugiego zakresu
+
+    std:: cout << "Starting from : " << initial_state[0] << ", " << initial_state[1] << std::endl;
+    
     PlanarQuadrotor quadrotor(initial_state);
     PlanarQuadrotorVisualizer quadrotor_visualizer(&quadrotor);
+   
     /**
      ZROBIONE ++++++++++++++++++++
      * Goal pose for the quadrotor
      * [x, y, theta, x_dot, y_dot, theta_dot]
      * For implemented LQR controller, it has to be [x, y, 0, 0, 0, 0]
     */
+   
     Eigen::VectorXf goal_state = Eigen::VectorXf::Zero(6);
     goal_state << -1, 7, 0, 0, 0, 0;
     quadrotor.SetGoal(goal_state);
     /* Timestep for the simulation */
-    const float dt = 0.001 * 5;
+    const float dt = 0.01;
     Eigen::MatrixXf K = LQR(quadrotor, dt);
     Eigen::Vector2f input = Eigen::Vector2f::Zero(2);
 
@@ -86,10 +119,12 @@ int main(int argc, char* args[])
 
         while (!quit)
         {
+            //pobieranie wspolrzednych quadrotora i wpisywanie ich do wektorow historii zmian x,y,th
             state = quadrotor.GetState();  
             x_history.push_back(state[0]);
             y_history.push_back(state[1]);
             theta_history.push_back(state[2]);
+            
             while (SDL_PollEvent(&e) != 0)
             {
                 if (e.type == SDL_QUIT)
@@ -100,10 +135,8 @@ int main(int argc, char* args[])
                 {
                     
                     SDL_GetMouseState(&x, &y);
-                    float kX = 1280.0 / SCREEN_WIDTH; // zakres od -640 do 640
-                    float kY = 720.0 / SCREEN_HEIGHT; // zakres od -360 do 360
-                    float quadrotorX = (x - SCREEN_WIDTH / 2) * kX;
-                    float quadrotorY = -(y - SCREEN_HEIGHT / 2) * kY;
+                    float quadrotorX = (x - SCREEN_WIDTH / 2);
+                    float quadrotorY = -(y - SCREEN_HEIGHT / 2);
                     std::cout << "Target for the quadrotor : (" << quadrotorX << ", " << quadrotorY << ")" << std::endl;
                     goal_state << quadrotorX, quadrotorY, 0, 0, 0, 0;
                     quadrotor.SetGoal(goal_state);
@@ -152,7 +185,7 @@ void plotGraphs(const std::vector<float>& x_history, const std::vector<float>& y
         //th               
     matplot::figure();
     matplot::plot(theta_history);
-    matplot::title("Change of theta angle");
+    matplot::title("Change of Theta angle");
     matplot::xlabel("time");
     matplot::ylabel("theta");
                     

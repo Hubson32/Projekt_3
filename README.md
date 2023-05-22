@@ -1,26 +1,2 @@
 # Techniki Programowania - Projekt 3
-Projekt polega na wczytaniu, przetworzeniu oraz zwizualizowaniu sygnałów występujących w systemach robotycznych. Projekt będzie realizowany z wykorzystaniem programu CMake.
-
-
-# Korzystanie z szablonu
-## Pobranie projektu
-W celu pobrania zależności (biblioteki Eigen oraz Matplot++), nalezy zaciągnąć repozytorium wraz z submodułami korzystając z flagi `--recursive`
-
-`git clone https://github.com/marekjg/tp_projekt_3 --recursive`
-
-## Budowanie projektu
-Korzystając z Visual Code i dodatku CMake tools, można buować i uruchamiać program z dolnego paska. Można też z linii poleceń:
-
-```bash
-mkdir build
-cd build
-cmake ..
-make -j4
-```
-
-## Uruchomienie aplikacji
-Tak jak budowanie, można wykorzystać CMake tools w Visual Studio Code albo znaleźć plik wykonywalny (pod nazwą z `add_executable` w pliku `CMakeLists.txt`).
-
-# Zadanie projektowe
-1. Uzupełnić kod zgodnie z polami TODO w plikach `PlanarQuadrotor`
-2. Dodać bibliotekę do odtwarzania dźwięku i odtwarzać dźwięk który narasta wraz z wiekszym sterowaniem (input w klasie PlanarQuadrotor)
+Podczas tworzenia projektu mieliśmy wątpliwości co do dodania funkcji matplot::show(), any wyświetlić wykresy. Znaleźliśmy sposób aby nie dodawać jej i wyświetlić okienka, ponieważ program po jej użyciu zawieszał się. Projekt działał poprawnie na 2 różnych urządzeniach i 2 różnych systemach operacyjnych jednak na wszelki wypadek, funkcja znajduje się w lini 194 simulate.cpp, jest tylko zakomentowana.

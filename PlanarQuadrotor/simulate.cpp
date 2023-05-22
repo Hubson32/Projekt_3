@@ -191,6 +191,8 @@ void plotGraphs(const std::vector<float>& x_history, const std::vector<float>& y
     matplot::xlabel("time");
     matplot::ylabel("theta");
 
+    //matplot::show();
+    
     //przy dodaniu w tym miejscu matplot::show() wykresy wyświetlają się ale program przestaje opdowiadac
     //nie dodajac tej linii, okienka z wykresami nadal sie wyswietlaja ale program nie zawiesza sie i nie konczy dzialania
                     

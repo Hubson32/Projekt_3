@@ -21,7 +21,6 @@ Eigen::MatrixXf LQR(PlanarQuadrotor &quadrotor, float dt) {
     R.row(0) << 3e1, 7;
     R.row(1) << 7, 3e1;
 
-
     std::tie(A, B) = quadrotor.Linearize();
     A_discrete = Eye + dt * A;
     B_discrete = dt * B;
@@ -56,7 +55,7 @@ int main(int argc, char* args[])
     std::random_device random;
     std::mt19937 gen(random());
     
-    //zakresy losowosci x i y
+    //zakresy losowosci x i y przy uruchamianiu
     
     std::uniform_int_distribution<int> random_x1(-640, -500);
     std::uniform_int_distribution<int> random_x2(500, 640);
@@ -135,14 +134,17 @@ int main(int argc, char* args[])
                 {
                     
                     SDL_GetMouseState(&x, &y);
-                    float quadrotorX = (x - SCREEN_WIDTH / 2);
-                    float quadrotorY = -(y - SCREEN_HEIGHT / 2);
-                    std::cout << "Target for the quadrotor : (" << quadrotorX << ", " << quadrotorY << ")" << std::endl;
-                    goal_state << quadrotorX, quadrotorY, 0, 0, 0, 0;
+                    //skalowanie wspolrzednych 
+                    float goal_X = (x - SCREEN_WIDTH / 2);
+                    float goal_Y = -(y - SCREEN_HEIGHT / 2);
+                    std::cout << "Target for the quadrotor : (" << goal_X << ", " << goal_Y << ")" << std::endl;
+                    //ustawienie nowego celu
+                    goal_state << goal_X, goal_Y, 0, 0, 0, 0;
                     quadrotor.SetGoal(goal_state);
                 }
                 else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_p)
                 {
+                    //jak nacisnieto p to rysuj grafy
                     plotGraphs(x_history, y_history, theta_history);
                 }
                 
@@ -170,24 +172,27 @@ int main(int argc, char* args[])
 void plotGraphs(const std::vector<float>& x_history, const std::vector<float>& y_history, const std::vector<float>& theta_history)
 {
                     
-      //x             
+      //Historia x             
     matplot::figure();
     matplot::plot(x_history);
     matplot::title("Change of X variable");
     matplot::xlabel("time");
     matplot::ylabel("x");
-        //y                         
+        //Historia y                    
     matplot::figure();
     matplot::plot(y_history);
     matplot::title("Change of Y variable");
     matplot::xlabel("time");
     matplot::ylabel("y");
-        //th               
+        //Historia theta           
     matplot::figure();
     matplot::plot(theta_history);
     matplot::title("Change of Theta angle");
     matplot::xlabel("time");
     matplot::ylabel("theta");
+
+    //przy dodaniu w tym miejscu matplot::show() wykresy wyświetlają się ale program przestaje opdowiadac
+    //nie dodajac tej linii, okienka z wykresami nadal sie wyswietlaja ale program nie zawiesza sie i nie konczy dzialania
                     
     }
 

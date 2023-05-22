@@ -32,7 +32,7 @@ void PlanarQuadrotorVisualizer::render(std::shared_ptr<SDL_Renderer> &gRenderer)
     angle = angle + 60;
 
     // "Kadlub" drona
-    SDL_Rect body = {q_x_screen - 85, q_y_screen - 30, 170, 9};
+    SDL_Rect body = {q_x_screen - 85, q_y_screen - 50, 170, 32};
     //Pierwsze smiglo
     SDL_Rect prop1 = { q_x_screen - 95, q_y_screen - 51 , 65, 5 };
     //Drugie smiglo
@@ -57,7 +57,7 @@ void PlanarQuadrotorVisualizer::render(std::shared_ptr<SDL_Renderer> &gRenderer)
 		std::cout << "Error loading image prop.bmp: " << SDL_GetError() << std::endl;
     }
 
-    SDL_RenderCopyEx(gRenderer.get(), body_texture, NULL, &body, q_theta * 0.2 * (180.0/M_PI), NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(gRenderer.get(), body_texture, NULL, &body, q_theta * 0.4 * (180.0/M_PI), NULL, SDL_FLIP_NONE);
 
     SDL_Texture* prop_texture;
 	prop_texture = SDL_CreateTextureFromSurface(gRenderer.get(),buffer2);
@@ -68,13 +68,6 @@ void PlanarQuadrotorVisualizer::render(std::shared_ptr<SDL_Renderer> &gRenderer)
 	}
     SDL_RenderCopyEx(gRenderer.get(), prop_texture, nullptr, &prop1, angle, NULL, SDL_FLIP_NONE);
     SDL_RenderCopyEx(gRenderer.get(), prop_texture, NULL, &prop2, angle, NULL, SDL_FLIP_NONE);
-
-     //Podporki
-    SDL_Rect cant1 = {q_x_screen - 65, q_y_screen - 46 , 4, 17};
-    SDL_Rect cant2 = {q_x_screen + 65, q_y_screen - 46 , 4, 17};
-    SDL_RenderCopyEx(gRenderer.get(), prop_texture, NULL, &cant1, q_theta * 0.4 * (180.0/M_PI), NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(gRenderer.get(), prop_texture, NULL, &cant2, q_theta * 0.4 * (180.0/M_PI), NULL, SDL_FLIP_NONE);
-   
 
     SDL_RenderPresent(gRenderer.get());
     
